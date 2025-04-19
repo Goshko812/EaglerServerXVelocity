@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  ubuntu:
+    image: ubuntu:latest
+    container_name: my-ubuntu-container
+    stdin_open: true
+    tty: true
+
+    ports:
+      - "9956:8081"
+      - "25577:25577"
+      - "25565:25565"
+
+    volumes:
+      - ./persistent-storage-folder:/data
+    command: bash
