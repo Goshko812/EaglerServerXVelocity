@@ -96,6 +96,7 @@ start_servers() {
     
     print_message "All servers started successfully!"
     print_message "To attach to a server, use: docker exec -it mc-server tmux a -t [velocity|server|limbo]"
+    print_message "To change the MOTD edit server_motd: in persistent-storage-folder/eagler-server/velocity/plugins/eaglerxvelocity/listeners.yml "
 }
 
 # Function to create a backup of the server folder
