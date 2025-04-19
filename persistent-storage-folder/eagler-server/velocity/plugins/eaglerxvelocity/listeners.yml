@@ -7,7 +7,7 @@ listener_01:
   redirect_legacy_clients_to: 'null'
   server_icon: server-icon.png
   server_motd:
-  - 'change using --motd'
+  - 'Default'
   allow_motd: true
   allow_query: true
   request_motd_cache:
