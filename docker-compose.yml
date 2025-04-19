@@ -3,7 +3,7 @@ version: '3.8'
 services:
   ubuntu:
     image: ubuntu:latest
-    container_name: my-ubuntu-container
+    container_name: mc-server
     stdin_open: true
     tty: true
 
