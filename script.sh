@@ -150,6 +150,42 @@ backup_servers() {
     fi
 }
 
+# Function to restore a backup to /data/eagler-server
+restore_servers() {
+    backup_file="$1"
+    print_message "Restoring backup: $backup_file"
+
+    if [ -z "$backup_file" ]; then
+        print_error "No backup file specified. Usage: $0 --restore FILENAME"
+        exit 1
+    fi
+    if [ ! -f "persistent-storage-folder/$backup_file" ]; then
+        print_error "Backup file not found in ./persistent-storage-folder/"
+        exit 1
+    fi
+
+    # Stop servers if any are running
+    if docker exec mc-server bash -c "tmux has-session -t velocity 2>/dev/null || tmux has-session -t server 2>/dev/null || tmux has-session -t limbo 2>/dev/null"; then
+        print_message "Stopping servers before restore..."
+        stop_servers
+    fi
+
+    # Copy and unzip inside container
+    docker cp "persistent-storage-folder/$backup_file" mc-server:/data/
+    docker exec -it mc-server bash -c "
+        rm -rf /data/eagler-server &&
+        unzip -o /data/$backup_file -d /data &&
+        rm /data/$backup_file
+    "
+
+    if [ $? -eq 0 ]; then
+        print_message "Backup restored successfully!"
+    else
+        print_error "Backup restoration failed!"
+        exit 1
+    fi
+}
+
 # Function to check if the Docker container is running
 check_container_running() {
     if [ "$(docker ps -q -f name=mc-server)" ]; then
@@ -196,6 +232,7 @@ show_help() {
     echo "  --start     Start all Minecraft servers in tmux sessions"
     echo "  --stop      Stop all running Minecraft server tmux sessions"
     echo "  --backup    Create a backup of all server data"
+    echo "  --restore   Restore a backup file: --restore FILENAME"
     echo "  --help      Display this help message"
     echo "" 
 }
@@ -232,6 +269,14 @@ case "$1" in
             exit 1
         fi
         backup_servers
+        ;;
+        
+    --restore)
+        if ! check_container_running; then
+            print_error "Docker container is not running. Please start it first with --init or --start"
+            exit 1
+        fi
+        restore_servers "$2"
         ;;
 
     --help)
