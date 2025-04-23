@@ -4,59 +4,28 @@
 
 # EaglerServerXVelocity
 Scripts to get your EaglerServer up and running without a hassle
-> [!IMPORTANT]
-> Follow the step by step to use EaglerCux
-> 
+The script initializes a Docker environment and setups everything necessary to run the velocity, limbo, and Minecraft server.
+The script also supports making backups, which can and should be automated using [crontab](https://crontab.guru/).
+
 ### Setup
-I made this to be run in docker so the instruction will be based on a flat ubuntu docker image until I care enough to actually make a docker image 
 
-## Installing deps
-**Updating/Installing:**
+1. Download the repo:
 ```bash
-apt update -y && apt install sudo python3 pip nano ranger curl unzip zip tmux
+git clone https://github.com/Goshko812/EaglerServerXVelocity
 ```
-## Installing java
-**Installing SDKMAN:**
+2. Enter the directory and make the script executable:
 ```bash
-curl -s "https://get.sdkman.io" | bash
+cd EaglerServerXVelocity && chmod +x script.sh
 ```
-**Installing Java:**
+3. Run the script to initialize the environment:
 ```bash
-sdk install java 17.0.9-amzn
+./script.sh --init
 ```
-
-# Create the tmux sessions
+4. Run the script again to start the servers:
 ```bash
-tmux new -s server
+./script --start
 ```
-```bash
-tmux new -s velocity
-```
-```bash
-tmux new -s limbo
-```
-## Commands to start the server
-```bash
-tmux a -t server
-cd server
-chmod +x server.sh
-./server.sh
-```
-## Commands to start the Velocity proxy
-```bash
-tmux a -t velocity
-cd velocity
-chmod +x velocity.sh
-./velocity.sh
-```
-## Commands to start Limbo/nLogin (Verify your players)
-```bash
-tmux a -t limbo
-cd limbo
-chmod +x limbo.sh
-./limbo.sh
-```
-
+5. Profit
 ## Misc Information
 #### tmux cheat sheet
 **Creating session**
