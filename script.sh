@@ -66,6 +66,32 @@ init_environment() {
     fi
 }
 
+# Function to stop all tmux sessions gracefully
+stop_servers() {
+    # Send Ctrl-C to each session, wait, then kill
+    print_message "Sending Ctrl-C to velocity server session..."
+    docker exec -it mc-server bash -c '
+        if tmux has-session -t velocity 2>/dev/null; then tmux send-keys -t velocity C-c; fi
+    '
+    print_message "Sending Ctrl-C to main server session..."
+    docker exec -it mc-server bash -c '
+        if tmux has-session -t server 2>/dev/null; then tmux send-keys -t server C-c; fi
+    '
+    print_message "Sending Ctrl-C to limbo server session..."
+    docker exec -it mc-server bash -c '
+        if tmux has-session -t limbo 2>/dev/null; then tmux send-keys -t limbo C-c; fi
+    '
+    print_message "Waiting 5 seconds for clean shutdown..."
+    sleep 5
+    print_message "Killing velocity session..."
+    docker exec -it mc-server bash -c 'tmux kill-session -t velocity 2>/dev/null || true'
+    print_message "Killing main server session..."
+    docker exec -it mc-server bash -c 'tmux kill-session -t server 2>/dev/null || true'
+    print_message "Killing limbo session..."
+    docker exec -it mc-server bash -c 'tmux kill-session -t limbo 2>/dev/null || true'
+    print_message "All tmux sessions terminated."
+}
+
 # Function to start all servers using tmux sessions
 start_servers() {
     print_message "Starting servers using tmux sessions..."
@@ -100,14 +126,22 @@ start_servers() {
 }
 
 # Function to create a backup of the server folder
+# Stops servers only if any tmux sessions are active, then zips /data/eagler-server to a date-named file
 backup_servers() {
     current_date=$(date +%Y-%m-%d)
     backup_name="mc-servers-backup-${current_date}.zip"
-    
+
+    # Check if any tmux sessions exist inside the container
+    if docker exec mc-server bash -c "tmux has-session -t velocity 2>/dev/null || tmux has-session -t server 2>/dev/null || tmux has-session -t limbo 2>/dev/null"; then
+        print_message "Stopping servers before backup..."
+        stop_servers
+    else
+        print_message "No running tmux sessions detected; skipping stop."
+    fi
+
     print_message "Creating backup: $backup_name"
-    
     docker exec -it mc-server bash -c "cd /data && zip -r ${backup_name} eagler-server"
-    
+
     if [ $? -eq 0 ]; then
         print_message "Backup created successfully at: ./persistent-storage-folder/${backup_name}"
     else
@@ -160,9 +194,10 @@ show_help() {
     echo "Options:"
     echo "  --init      Check for Docker, start container, and initialize environment"
     echo "  --start     Start all Minecraft servers in tmux sessions"
+    echo "  --stop      Stop all running Minecraft server tmux sessions"
     echo "  --backup    Create a backup of all server data"
     echo "  --help      Display this help message"
-    echo ""
+    echo "" 
 }
 
 # Main script execution
@@ -173,6 +208,7 @@ case "$1" in
         wait_for_container
         init_environment
         ;;
+
     --start)
         if ! check_container_running; then
             print_warning "Docker container is not running. Starting it now..."
@@ -181,6 +217,15 @@ case "$1" in
         fi
         start_servers
         ;;
+
+    --stop)
+        if ! check_container_running; then
+            print_error "Docker container is not running. Please start it first with --init or --start"
+            exit 1
+        fi
+        stop_servers
+        ;;
+
     --backup)
         if ! check_container_running; then
             print_error "Docker container is not running. Please start it first with --init or --start"
@@ -188,9 +233,11 @@ case "$1" in
         fi
         backup_servers
         ;;
+
     --help)
         show_help
         ;;
+
     *)
         print_error "Unknown option: $1"
         show_help
