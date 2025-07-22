@@ -1,11 +1,11 @@
-> [!IMPORTANT]
-> DOCS NOT FINISHED
-> 
-
 # EaglerServerXVelocity
 Scripts to get your EaglerServer up and running without a hassle
 The script initializes a Docker environment and setups everything necessary to run the velocity, limbo, and Minecraft server.
 The script also supports making backups, which can and should be automated using [crontab](https://crontab.guru/).
+
+![trash code](https://img.shields.io/badge/code-trash%20🗑️-red)
+![works](https://img.shields.io/badge/works-on%20my%20machine-brightgreen)
+![bash magic](https://img.shields.io/badge/powered%20by-bash%20and%20hope-yellow)
 
 ### Setup
 
@@ -27,6 +27,16 @@ cd EaglerServerXVelocity && chmod +x script.sh
 ```
 5. Profit
 ## Misc Information
+#### Options:
+```
+--init      Check for Docker, start container, and initialize environment"
+--start     Start all Minecraft servers in tmux sessions"
+--stop      Stop all running Minecraft server tmux sessions"
+--backup    Create a backup of all server data"
+--restore   Restore a backup file: --restore FILENAME"
+--help      Display this help message"
+```
+
 #### tmux cheat sheet
 **Creating session**
 ```bash
@@ -45,9 +55,3 @@ hit control + B and then hit D
 hit control + B and then hit [
 ```
 You can exit scroll mode by hitting `Q`
-
-#### How to be an operator/admin in the server?
-
-1.) Go to the Server/Backend - > First tab
-
-2.) then type "op username" without "" and change the username to yours
